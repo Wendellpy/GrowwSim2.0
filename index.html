@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GrowwSim - Learn Investing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] } } } }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-ofTr9U6C0t9kxxQ8I6W3wA9SBT5l1Jv9g9WJqzXWgqgE8mN2O3pQ1v0wR2Wl4A1I9cWc7h8eAq4VwGk2FQqM7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    :root { color-scheme: light dark; --card-bg:#ffffff; --card-border: rgba(0,0,0,.08); --text:#111827; --muted:#6b7280; --bg:#f5f5f5; --shadow: 0 1px 2px rgba(0,0,0,.06); }
+    @media (prefers-color-scheme: dark){
+      :root { --card-bg:#0a0a0a; --card-border: rgba(255,255,255,.08); --text:#f5f5f5; --bg:#0a0a0a; --shadow: 0 1px 2px rgba(0,0,0,.4); }
+    }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0.75rem; box-shadow: var(--shadow); }
+    .btn { padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: opacity .15s ease, transform .06s ease; }
+    .btn:hover { opacity: .9; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: #10b981; color: #fff; }
+    .btn-ghost { background: rgba(0,0,0,.04); color: inherit; }
+    @media (prefers-color-scheme: dark){ .btn-ghost { background: rgba(255,255,255,.06); } }
+    .tab { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: background .15s ease, color .15s ease; }
+    .tab-active { background: #10b981; color: #fff; }
+    .chip { padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+    .up { color: #059669; }
+    .down { color: #e11d48; }
+  </style>
+</head>
+<body class="bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 min-h-screen">
+  <!-- Login Screen -->
+  <section id="loginSection" class="hidden min-h-screen flex items-center justify-center px-4">
+    <div class="card w-full max-w-sm p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <i class="fa-solid fa-leaf text-emerald-600"></i>
+        <h1 class="font-semibold">GrowwSim</h1>
+      </div>
+      <h2 class="text-lg font-semibold">Sign in</h2>
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-sm">Username</label>
+          <input id="loginUsername" type="text" class="mt-1 w-full card px-3 py-2" placeholder="demo" />
+        </div>
+        <div>
+          <label class="text-sm">Password</label>
+          <input id="loginPassword" type="password" class="mt-1 w-full card px-3 py-2" placeholder="demo123" />
+        </div>
+        <div id="loginError" class="text-sm down hidden">Invalid credentials</div>
+        <div class="flex gap-2">
+          <button id="loginBtn" class="btn btn-primary w-full">Login</button>
+          <button id="signupBtn" class="btn btn-ghost w-full">Sign up</button>
+        </div>
+        <div class="text-xs text-neutral-500">Tip: You can still use demo/demo123.</div>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell" class="">
+  <header class="sticky top-0 z-20 bg-white/80 dark:bg-neutral-950/80 backdrop-blur border-b border-neutral-200/70 dark:border-neutral-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-8 flex-nowrap">
+      <div class="flex items-center gap-4 shrink-0">
+        <i class="fa-solid fa-leaf text-emerald-600 text-xl"></i>
+        <span class="font-semibold">GrowwSim</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-4 flex-1 justify-center" id="nav-tabs">
+        <button class="tab tab-active" data-target="dashboard"><i class="fa-solid fa-house"></i> Dashboard</button>
+        <button class="tab" data-target="stocks"><i class="fa-solid fa-chart-line"></i> Stocks</button>
+        <button class="tab" data-target="funds"><i class="fa-solid fa-coins"></i> Mutual Funds</button>
+        <button class="tab" data-target="sip"><i class="fa-solid fa-calculator"></i> SIP Calculator</button>
+        <button class="tab" data-target="portfolio"><i class="fa-solid fa-briefcase"></i> Portfolio</button>
+      </nav>
+      <div class="flex items-center gap-5 shrink-0">
+        <div class="hidden sm:flex items-center gap-3">
+          <button id="liveToggle" class="tab"><i class="fa-solid fa-bolt"></i> Live</button>
+          <div class="relative">
+            <input id="finnhubKey" type="password" placeholder="Finnhub API Key" class="card px-3 py-2 text-xs" style="min-width: 14rem;" />
+          </div>
+        </div>
+        <button id="resetBtn" class="btn btn-ghost hidden sm:inline-flex"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+        <button id="logoutBtn" class="btn btn-ghost hidden sm:inline-flex"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        <div class="text-sm ml-2 pl-3 border-l border-neutral-200/70 dark:border-neutral-800">Balance: <span id="balanceDisplay" class="font-semibold"></span></div>
+        <button class="md:hidden btn btn-ghost" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+    <div id="mobileMenu" class="md:hidden px-4 pb-3 hidden">
+      <div class="flex flex-wrap gap-2" id="mobile-tabs"></div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-4 space-y-4">
+    <!-- Dashboard -->
+    <section id="dashboard" class="space-y-4">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card p-5">
+          <div class="text-sm text-neutral-500">Portfolio Value</div>
+          <div id="portfolioValue" class="text-2xl font-semibold mt-1">₹0</div>
+          <div id="portfolioPL" class="mt-2 text-sm"></div>
+        </div>
+        <div class="card p-5">
+          <div class="text-sm text-neutral-500">Total Invested</div>
+          <div id="totalInvested" class="text-2xl font-semibold mt-1">₹0</div>
+        </div>
+        <div class="card p-5">
+          <div class="text-sm text-neutral-500">Cash Balance</div>
+          <div id="cashBalance" class="text-2xl font-semibold mt-1">₹0</div>
+        </div>
+      </div>
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-medium">Sensex</div>
+          <div class="flex gap-2 text-xs" id="dashTfGroup">
+            <button class="chip btn-ghost" data-tf="1D">1D</button>
+            <button class="chip btn-ghost" data-tf="1W">1W</button>
+            <button class="chip btn-ghost" data-tf="1M">1M</button>
+            <button class="chip btn-ghost" data-tf="1Y">1Y</button>
+          </div>
+        </div>
+        <div class="mt-4">
+          <canvas id="marketChart" height="90"></canvas>
+        </div>
+      </div>
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-medium">Watchlist</div>
+        </div>
+        <div id="watchlistEmpty" class="text-sm text-neutral-500 mt-2">Your watchlist is empty. Star stocks to add.</div>
+        <div id="watchlistList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3"></div>
+      </div>
+    </section>
+
+    <!-- Stocks -->
+    <section id="stocks" class="hidden space-y-4">
+      <div class="card p-4 flex items-center justify-between gap-3 flex-wrap">
+        <div class="text-sm font-medium">Stocks</div>
+        <div class="flex-1 min-w-[200px] max-w-[360px]">
+          <input id="stockSearch" type="text" placeholder="Search stocks (name or symbol)" class="card w-full px-3 py-2 text-sm" />
+        </div>
+        <div class="flex gap-2 text-xs" id="stockTfGroup">
+          <button class="chip btn-ghost" data-tf="1D">1D</button>
+          <button class="chip btn-ghost" data-tf="1W">1W</button>
+          <button class="chip btn-ghost" data-tf="1M">1M</button>
+          <button class="chip btn-ghost" data-tf="1Y">1Y</button>
+        </div>
+      </div>
+      <div id="stocksList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- Mutual Funds -->
+    <section id="funds" class="hidden space-y-4">
+      <div class="card p-4">
+        <div class="flex items-center justify-between text-sm font-medium">
+          <span>Mutual Funds</span>
+          <span>SIP Calculator</span>
+        </div>
+      </div>
+      <div id="fundsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div class="card p-5">
+        <h3 class="font-semibold mb-3">My SIPs</h3>
+        <div id="mySips" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- SIP Calculator -->
+    <section id="sip" class="hidden space-y-4">
+      <div class="card p-4">
+        <div class="flex items-center justify-between text-sm font-medium">
+          <span>Mutual Funds</span>
+          <span>SIP Calculator</span>
+        </div>
+      </div>
+      <div class="card p-5 space-y-4">
+        <div class="grid md:grid-cols-3 gap-6">
+          <div>
+            <label class="text-sm flex items-center justify-between">Monthly Investment (₹)
+              <span id="sipAmountVal" class="text-xs text-neutral-500">₹5,000</span>
+            </label>
+            <input id="sipAmount" type="range" class="mt-2 w-full" min="500" max="100000" step="500" value="5000" />
+          </div>
+          <div>
+            <label class="text-sm flex items-center justify-between">Expected Return (% p.a.)
+              <span id="sipRateVal" class="text-xs text-neutral-500">12%</span>
+            </label>
+            <input id="sipRate" type="range" class="mt-2 w-full" min="0" max="30" step="0.5" value="12" />
+          </div>
+          <div>
+            <label class="text-sm flex items-center justify-between">Years
+              <span id="sipYearsVal" class="text-xs text-neutral-500">10y</span>
+            </label>
+            <input id="sipYears" type="range" class="mt-2 w-full" min="1" max="40" step="1" value="10" />
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button id="calcSipBtn" class="btn btn-primary">Recalculate</button>
+        </div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="card p-4">
+            <div class="text-sm text-neutral-500">Total Invested</div>
+            <div id="sipInvested" class="text-xl font-semibold mt-1">₹0</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-neutral-500">Expected Value</div>
+            <div id="sipExpected" class="text-xl font-semibold mt-1">₹0</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-sm text-neutral-500">Wealth Gain</div>
+            <div id="sipGain" class="text-xl font-semibold mt-1">₹0</div>
+          </div>
+        </div>
+        <div class="card p-4">
+          <canvas id="sipChart" height="100"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio -->
+    <section id="portfolio" class="hidden space-y-4">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card p-5">
+          <div class="text-sm text-neutral-500">Invested</div>
+          <div id="pfInvested" class="text-2xl font-semibold mt-1">₹0</div>
+        </div>
+        <div class="card p-5">
+          <div class="text-sm text-neutral-500">Current Value</div>
+          <div id="pfValue" class="text-2xl font-semibold mt-1">₹0</div>
+        </div>
+        <div class="card p-5">
+          <div class="text-sm text-neutral-500">P/L</div>
+          <div id="pfPL" class="text-2xl font-semibold mt-1">₹0</div>
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">Stocks</h3>
+        </div>
+        <div id="portfolioStocksEmpty" class="text-sm text-neutral-500 mt-2 hidden">No stock holdings yet.</div>
+        <div id="portfolioStocks" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3"></div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">Mutual Funds</h3>
+        </div>
+        <div id="portfolioFundsEmpty" class="text-sm text-neutral-500 mt-2 hidden">No mutual fund holdings yet.</div>
+        <div id="portfolioFunds" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3"></div>
+      </div>
+
+      <div class="card p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">Transaction History</h3>
+        </div>
+        <div id="txEmpty" class="text-sm text-neutral-500 mt-2 hidden">No transactions yet.</div>
+        <div id="txList" class="mt-3 flex flex-col gap-2"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="py-10 text-center text-sm text-neutral-500">
+    Wendell(10724) Aaron(10725) Jaden(10716)
+  </footer>
+
+  </div><!-- /appShell -->
+
+  <div id="modal" class="fixed inset-0 hidden items-center justify-center z-40">
+    <div class="absolute inset-0 bg-black/50" data-close="1"></div>
+    <div class="relative card p-5 w-[90%] max-w-sm z-10">
+      <div class="flex items-start justify-between gap-3">
+        <h3 id="modalTitle" class="font-semibold">Action</h3>
+        <button class="btn btn-ghost" data-close="1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mt-4 space-y-3" id="modalBody"></div>
+      <div class="mt-4 flex gap-2 justify-end">
+        <button class="btn btn-ghost" data-close="1">Cancel</button>
+        <button class="btn btn-primary" id="modalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+  <script type="module" src="./data.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
